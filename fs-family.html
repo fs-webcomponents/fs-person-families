@@ -1,0 +1,154 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../fs-behavior/fs-behavior.html">
+<link rel="import" href="../paper-card/paper-card.html">
+
+<!--
+Display a family.
+
+Either provide the couple url:
+
+    <fs-family couple-url="https://familysearch.org/platform/tree/couple-relationships/CCC-CCCC"></fs-family>
+    
+Or provide the couple object:
+
+    <fs-family couple="{{couple}}"></fs-family>
+    
+You may specify whether to include the children; children are loaded automatically:
+
+    <fs-family couple="{{couple}}" include-children></fs-family>
+    
+Or provide the children yourself:
+
+    <fs-family couple="{{couple}}" include-children children="{{children}}"></fs-family>
+    
+You may have the children list collapsed by default:
+
+    <fs-family couple="{{couple}}" include-children collapsed-children></fs-family>
+
+@group FamilySearch Elements
+@element fs-family
+@demo demo/index.html
+-->
+
+<dom-module id="fs-family">
+  <template>
+    <style>
+      :host {
+        width: 300px;
+      }
+      
+      paper-card {
+        width: 100%;
+      }
+    </style>
+    <fs-client name="{{clientName}}" on-authenticated-changed="_load"></fs-client>
+    <paper-card>
+      <div class="card-content">
+        <div id="husband"></div>
+        <div id="wife"></div>
+      </div>
+    </paper-card>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    
+    is: 'fs-family',
+    
+    properties: {
+      
+      /**
+       * Provide a couple object for display. Use this if you already have the
+       * couple object. If you need to load it then set the `coupleUrl` instead.
+       */
+      couple: {
+        type: Object,
+        notify: true
+      },
+      
+      /**
+       * The URL to the couple relationship that should be laoded. If you already
+       * have the couple object loaded then set the `couple` property instead.
+       */
+      coupleUrl: String,
+      
+      /**
+       * When true the children list will be displayed below the couple.
+       */
+      includeChildren: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false
+      },
+      
+      /**
+       * When true the children list will be collapsed by default. This is only
+       * used if `includeChildren` is true.
+       */
+      collapsedChildren: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false
+      },
+      
+      /**
+       * Set this attribute to provide the list of children instead of having
+       * them loaded.
+       */
+      children: {
+        type: Object,
+        notify: true
+      },
+      
+      requested: {
+        type: Boolean,
+        readOnly: true,
+        value: false
+      }
+      
+    },
+    
+    behaviors: [FSBehavior],
+    
+    ready: function(){
+      this._load();
+    },
+    
+    _load: function(){
+      // Request the couple if we haven't yet and we can
+      if(!this.requested && !this.couple && this.coupleUrl && this.isAuthenticated()){
+        var self = this;
+        this._setRequested(true);
+        this.getClient().getCouple(this.coupleUrl, {persons: true}).then(function(response){
+          self.couple = response.getRelationship();
+          self.husband = response.getPerson(self.couple.getHusbandId());
+          self.wife = response.getPerson(self.couple.getWifeId());
+          self._display();
+        });
+      }
+      
+      // If we have the couple already then display
+      else {
+        this._display();
+      }
+    },
+    
+    /**
+     * Update the current display, if we need to
+     */
+    _display: function(){
+      if(this.husband){
+        this.$.husband.textContent = this.husband.getDisplayName();
+      } else {
+        this.$.husband.textContent = '';
+      }
+      if(this.wife){
+        this.$.wife.textContent = this.wife.getDisplayName();
+      } else {
+        this.$.wife.textContent = '';
+      }
+    }
+    
+  });
+</script>

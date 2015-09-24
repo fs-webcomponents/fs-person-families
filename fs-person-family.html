@@ -1,0 +1,83 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../fs-behavior/fs-behavior.html">
+<link rel="import" href="../fs-client/fs-client.html">
+<link rel="import" href="../paper-card/paper-card.html">
+
+<!--
+Display a FamilySearch person's family.
+
+Basic example:
+
+    <fs-person-family person-id="PPP-PPPP"></fs-person-family>
+
+@group FamilySearch Elements
+@element fs-person-family
+@demo demo/index.html
+-->
+<dom-module id="fs-person-facts">
+  <template>
+    <fs-client name="{{clientName}}" on-authenticated-changed="_loadFamily"></fs-client>
+    <paper-card>
+      
+    </paper-card>
+  </template>
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'fs-person-family',
+    
+    properties: {
+      
+      personId: {
+        type: String,
+        observer: '_loadFamily'
+      },
+      
+      requested: {
+        type: Boolean,
+        readOnly: true,
+        value: false
+      },
+      
+      familyType: {
+        type: String,
+        value: 'spouse',
+        observer: '_displayFamily'
+      },
+      
+      _familyResponse: {
+        type: Object,
+        readOnly: true,
+        observer: '_displayFamily'
+      },
+      
+      
+      
+    },
+
+    behaviors: [FSBehavior],
+    
+    _authChanged: function(event){
+      this._loadFamily();
+    },
+    
+    _loadFamily: function(){
+      var self = this;
+      if(this.isAuthenticated() && this.personId && !this.requested){
+        this._setRequested(true);
+        this.getClient().getPersonWithRelationships(this.personId, {persons: true}).then(function(response){
+          self._setFamilyResponse(response);
+        });
+      }
+    },
+    
+    _displayFamily: function(){
+      
+    }
+    
+  });
+
+</script>

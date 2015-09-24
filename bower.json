@@ -22,7 +22,8 @@
     "fs-client": "fs-webcomponents/fs-client#~0.1.9",
     "fs-behavior": "fs-webcomponents/fs-behavior#~0.1.4",
     "paper-card": "PolymerElements/paper-card#~1.0.5",
-    "fs-person-portrait": "fs-webcomponents/fs-person-portrait#~0.1.7"
+    "fs-person-portrait": "fs-webcomponents/fs-person-portrait#~0.1.7",
+    "fs-person-chip": "fs-webcomponents/fs-person-chip#~0.1.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

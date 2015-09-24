@@ -2,6 +2,8 @@
 <link rel="import" href="../fs-behavior/fs-behavior.html">
 <link rel="import" href="../fs-person-chip/fs-person-chip.html">
 <link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
 
 <!--
 Display a family.
@@ -16,7 +18,7 @@ You may specify whether to include the children; children are loaded automatical
     
 You may have the children list collapsed by default:
 
-    <fs-family couple-url="{{url}}" include-children collapsed-children></fs-family>
+    <fs-family couple-url="{{url}}" include-children children-collapsed></fs-family>
 
 @group FamilySearch Elements
 @element fs-family
@@ -34,15 +36,44 @@ You may have the children list collapsed by default:
         width: 100%;
       }
       
-      #wife {
+      #wifeChip {
         margin-top: 16px;
       }
+      
+      #children {
+        border-top: 1px solid #ddd;
+      }
+      
+      #childrenList fs-person-chip {
+        margin: 8px 16px;
+      }
+      
+      #childrenList fs-person-chip:first-child{
+        margin-top: 0px;
+      }
+      
+      #noChildren {
+        color: --secondary-text-color;
+      }
     </style>
-    <fs-client name="{{clientName}}" on-authenticated-changed="_load"></fs-client>
+    <fs-client client-name="{{clientName}}" on-authenticated-changed="_loadCouple"></fs-client>
+    <fs-person-cache id="husband" client-name="{{clientName}}" person="{{husband}}"></fs-person-cache>
+    <fs-person-cache id="wife" client-name="{{clientName}}" person="{{wife}}"></fs-person-cache>
     <paper-card>
       <div class="card-content">
-        <fs-person-chip id="husband" client-name="{{clientName}}"></fs-person-chip>
-        <fs-person-chip id="wife" client-name="{{clientName}}"></fs-person-chip>
+        <fs-person-chip id="husbandChip" client-name="{{clientName}}"></fs-person-chip>
+        <fs-person-chip id="wifeChip" client-name="{{clientName}}"></fs-person-chip>
+      </div>
+      <div id="children" hidden$="{{!includeChildren}}">
+        <paper-button id="childrenButton" on-click="_toggleChildren" noink>{{_buttonText(childrenCollapsed)}}</paper-button>
+        <iron-collapse id="collapse" opened="[[!childrenCollapsed]]">
+          <div id="childrenList">
+            <template is="dom-repeat" items="{{_childrenIds}}">
+              <fs-person-chip client-name="{{clientName}}" person-id="{{item}}"></fs-person-chip>
+            </template>
+            <div id="noChildren" hidden$="{{_childrenIds.length}}">No children</div>
+          </div>
+        </iron-collapse>
       </div>
     </paper-card>
   </template>
@@ -62,7 +93,7 @@ You may have the children list collapsed by default:
       couple: {
         type: Object,
         notify: true,
-        observer: '_display'
+        observer: '_displayCouple'
       },
       
       /**
@@ -71,7 +102,17 @@ You may have the children list collapsed by default:
        */
       coupleUrl: {
         type: String,
-        observer: '_load'
+        observer: '_loadCouple'
+      },
+      
+      husband: {
+        type: Object,
+        notify: true
+      },
+      
+      wife: {
+        type: Object,
+        notify: true
       },
       
       /**
@@ -87,52 +128,90 @@ You may have the children list collapsed by default:
        * When true the children list will be collapsed by default. This is only
        * used if `includeChildren` is true.
        */
-      collapsedChildren: {
+      childrenCollapsed: {
         type: Boolean,
         reflectToAttribute: true,
         value: false
       },
-
-      children: {
-        type: Object,
-        notify: true
-      },
       
-      requested: {
+      coupleRequested: {
         type: Boolean,
         readOnly: true,
         value: false
+      },
+      
+      childrenRequested: {
+        type: Boolean,
+        readOnly: true,
+        value: false
+      },
+      
+      _childrenIds: {
+        type: Array,
+        value: []
       }
       
     },
     
+    observers: [
+      '_loadChildren(husband, wife)'
+    ],
+    
     behaviors: [FSBehavior],
     
-    _load: function(){
+    _loadCouple: function(){
       // Request the couple if we haven't yet and we can
-      if(!this.requested && !this.couple && this.coupleUrl && this.isAuthenticated()){
+      if(!this.coupleRequested && !this.couple && this.coupleUrl && this.isAuthenticated()){
         var self = this;
-        this._setRequested(true);
+        this._setCoupleRequested(true);
         this.getClient().getCouple(this.coupleUrl).then(function(response){
           self.couple = response.getRelationship();
-          // TODO: load children
+          self.$.husband.personId = self.couple.getHusbandId();
+          self.$.wife.personId = self.couple.getWifeId();
         });
       }
       
       // If we have the couple already then display
       else {
-        this._display();
+        this._displayCouple();
+      }
+    },
+    
+    _loadChildren: function(){
+      if(!this.childrenRequested && this.includeChildren && this.husband && this.wife && this.isAuthenticated()){
+        var self = this;
+        this._setChildrenRequested(true);
+        this.husband.getChildren().then(function(response){
+          var relationships = response.getChildAndParentsRelationships(),
+              rel;
+          for(var i = 0; i < relationships.length; i++){
+            rel = relationships[i];
+            
+            // Make sure we have the right spouse
+            if(rel.getMotherId() === self.wife.getId()){
+              self.push('_childrenIds', rel.getChildId());
+            }
+          }
+        });
       }
     },
     
     /**
      * Update the current display, if we need to
      */
-    _display: function(){
+    _displayCouple: function(){
       if(this.couple){
-        this.$.husband.personId = this.couple.getHusbandId();
-        this.$.wife.personId = this.couple.getWifeId();
+        this.$.husbandChip.personId = this.couple.getHusbandId();
+        this.$.wifeChip.personId = this.couple.getWifeId();
       }
+    },
+    
+    _buttonText: function(){
+      return this.childrenCollapsed ? 'Show Children' : 'Hide Children';
+    },
+    
+    _toggleChildren: function(){
+      this.childrenCollapsed = !this.childrenCollapsed;
     }
     
   });

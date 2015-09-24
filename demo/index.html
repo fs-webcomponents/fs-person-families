@@ -7,13 +7,12 @@
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../../fs-client/fs-client.html">
     <link rel="import" href="../../fs-signin/fs-signin.html">
-    <link rel="import" href="../fs-family.html">
+    <link rel="import" href="../fs-person-family.html">
     <link rel="import" href="../../paper-styles/demo-pages.html">
     <style is="custom-style">
-      fs-family {
-        float: left;
+      fs-person-family {
         margin-top: 16px;
-        margin-right: 16px;
+        max-width: 800px;
       }
     </style>
   </head>
@@ -23,11 +22,7 @@
     <fs-signin></fs-signin>
     <br>
     
-    <fs-family couple-url="https://sandbox.familysearch.org/platform/tree/couple-relationships/MM9X-7MZ"></fs-family>
-    
-    <fs-family couple-url="https://sandbox.familysearch.org/platform/tree/couple-relationships/MM9X-7MZ" include-children children-collapsed></fs-family>
-    
-    <fs-family couple-url="https://sandbox.familysearch.org/platform/tree/couple-relationships/MM9X-7MZ" include-children></fs-family>
+    <fs-person-family person-id="KWCF-GK5"></fs-person-family>
 
   </body>
 </html>

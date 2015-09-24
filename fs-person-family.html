@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../fs-behavior/fs-behavior.html">
 <link rel="import" href="../fs-client/fs-client.html">
+<link rel="import" href="../fs-person-family/fs-family.html">
 <link rel="import" href="../paper-card/paper-card.html">
 
 <!--
@@ -14,11 +15,48 @@ Basic example:
 @element fs-person-family
 @demo demo/index.html
 -->
-<dom-module id="fs-person-facts">
+<dom-module id="fs-person-family">
   <template>
-    <fs-client name="{{clientName}}" on-authenticated-changed="_loadFamily"></fs-client>
-    <paper-card>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+      }
       
+      paper-card {
+        width: 100%;
+      }
+      
+      #columns {
+        display: flex;
+      }
+      
+      .column {
+        flex-grow: 1;
+      }
+      
+      fs-family {
+        margin-top: 16px;
+      }
+    </style>
+    <fs-client client-name="{{clientName}}" on-authenticated-changed="_loadFamily"></fs-client>
+    <paper-card>
+      <div class="card-content">
+        <div id="columns">
+          <div class="column">
+            <div class="col-title">Spouses and Children</div>
+            <div id="spouses">
+              <template is="dom-repeat" items="{{_spouseUrls}}">
+                <fs-family client-name="{{clientName}}" couple-url="{{item}}" include-children></fs-family>
+              </template>
+            </div>
+          </div>
+          <div class="column">
+            <div class="col-title">Parents and Siblings</div>
+            <div id="parents"></div>
+          </div>
+        </div>
+      </div>
     </paper-card>
   </template>
 </dom-module>
@@ -42,19 +80,16 @@ Basic example:
         value: false
       },
       
-      familyType: {
-        type: String,
-        value: 'spouse',
-        observer: '_displayFamily'
-      },
-      
       _familyResponse: {
         type: Object,
         readOnly: true,
         observer: '_displayFamily'
       },
       
-      
+      _spouseUrls: {
+        type: Array,
+        value: []
+      }
       
     },
 
@@ -68,14 +103,19 @@ Basic example:
       var self = this;
       if(this.isAuthenticated() && this.personId && !this.requested){
         this._setRequested(true);
-        this.getClient().getPersonWithRelationships(this.personId, {persons: true}).then(function(response){
-          self._setFamilyResponse(response);
+        this.getClient().getPersonWithRelationships(this.personId).then(function(response){
+          self._set_familyResponse(response);
         });
       }
     },
     
     _displayFamily: function(){
-      
+      if(this._familyResponse){
+        var spouseRels = this._familyResponse.getSpouseRelationships();
+        for(var i = 0; i < spouseRels.length; i++){
+          this.push('_spouseUrls', spouseRels[i].getCoupleUrl());
+        }
+      }
     }
     
   });

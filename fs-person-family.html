@@ -1,7 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../fs-behavior/fs-behavior.html">
 <link rel="import" href="../fs-client/fs-client.html">
-<link rel="import" href="../fs-person-family/fs-family.html">
+<link rel="import" href="../fs-family/fs-family.html">
 
 <!--
 Display a FamilySearch person's family.
@@ -38,20 +38,24 @@ Basic example:
         margin-top: 16px;
       }
     </style>
-    <fs-client client-name="{{clientName}}" on-authenticated-changed="_loadFamily"></fs-client>
+    <fs-client client-name="[[clientName]]" on-authenticated-changed="_loadFamily"></fs-client>
     <div class="card-content">
       <div id="columns">
         <div class="column">
           <div class="col-title">Spouses and Children</div>
-          <div id="spouses">
+          <div>
             <template is="dom-repeat" items="{{_spouseUrls}}">
-              <fs-family client-name="{{clientName}}" couple-url="{{item}}" include-children></fs-family>
+              <fs-family client-name="[[clientName]]" couple-url="{{item}}" include-children></fs-family>
             </template>
           </div>
         </div>
         <div class="column">
           <div class="col-title">Parents and Siblings</div>
-          <div id="parents"></div>
+          <div>
+            <template is="dom-repeat" items="{{_parentIds}}">
+              <fs-family client-name="[[clientName]]" husband-id="{{item.husbandId}}" wife-id="{{item.wifeId}}" include-children></fs-family>
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -86,6 +90,11 @@ Basic example:
       _spouseUrls: {
         type: Array,
         value: []
+      },
+      
+      _parentIds: {
+        type: Array,
+        value: []
       }
       
     },
@@ -116,9 +125,14 @@ Basic example:
         }
         
         // Parents and siblings
-        // We have the parents but not a couple rel for them.
-        // We'll need to set the husband,wife on the `fs-family` element
-        // instead of the couple rel.
+        var parentRels = this._familyResponse.getParentRelationships();
+        for(var i = 0; i < parentRels.length; i++){
+          var rel = parentRels[i];
+          this.push('_parentIds', {
+            husbandId: rel.getFatherId(),
+            wifeId: rel.getMotherId()
+          });
+        }
       }
     }
     

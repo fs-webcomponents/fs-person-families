@@ -57,20 +57,20 @@ You may have the children list collapsed by default:
         color: --secondary-text-color;
       }
     </style>
-    <fs-client client-name="{{clientName}}" on-authenticated-changed="_loadCouple"></fs-client>
-    <fs-person-cache id="husband" client-name="{{clientName}}" person="{{husband}}"></fs-person-cache>
-    <fs-person-cache id="wife" client-name="{{clientName}}" person="{{wife}}"></fs-person-cache>
+    <fs-client client-name="[[clientName]]" on-authenticated-changed="_loadCouple"></fs-client>
+    <fs-person-cache client-name="[[clientName]]" person-id="[[husbandId]]" person="{{husband}}"></fs-person-cache>
+    <fs-person-cache client-name="[[clientName]]" person-id="[[wifeId]]" person="{{wife}}"></fs-person-cache>
     <paper-card>
       <div class="card-content">
-        <fs-person-chip id="husbandChip" client-name="{{clientName}}"></fs-person-chip>
-        <fs-person-chip id="wifeChip" client-name="{{clientName}}"></fs-person-chip>
+        <fs-person-chip client-name="[[clientName]]" person-id="[[husbandId]]"></fs-person-chip>
+        <fs-person-chip client-name="[[clientName]]" person-id="[[wifeId]]"></fs-person-chip>
       </div>
       <div id="children" hidden$="{{!includeChildren}}">
         <paper-button id="childrenButton" on-click="_toggleChildren" noink>{{_buttonText(childrenCollapsed)}}</paper-button>
         <iron-collapse id="collapse" opened="[[!childrenCollapsed]]">
           <div id="childrenList">
             <template is="dom-repeat" items="{{_childrenIds}}">
-              <fs-person-chip client-name="{{clientName}}" person-id="{{item}}"></fs-person-chip>
+              <fs-person-chip client-name="[[clientName]]" person-id="{{item}}"></fs-person-chip>
             </template>
             <div id="noChildren" hidden$="{{_childrenIds.length}}">No children</div>
           </div>
@@ -94,7 +94,7 @@ You may have the children list collapsed by default:
       couple: {
         type: Object,
         notify: true,
-        observer: '_displayCouple'
+        observer: '_processCouple'
       },
       
       /**
@@ -108,11 +108,23 @@ You may have the children list collapsed by default:
       
       husband: {
         type: Object,
+        notify: true,
+        value: null
+      },
+      
+      husbandId: {
+        type: String,
         notify: true
       },
       
       wife: {
         type: Object,
+        notify: true,
+        value: null
+      },
+      
+      wifeId: {
+        type: String,
         notify: true
       },
       
@@ -167,29 +179,54 @@ You may have the children list collapsed by default:
         this._setCoupleRequested(true);
         this.getClient().getCouple(this.coupleUrl).then(function(response){
           self.couple = response.getRelationship();
-          self.$.husband.personId = self.couple.getHusbandId();
-          self.$.wife.personId = self.couple.getWifeId();
         });
-      }
-      
-      // If we have the couple already then display
-      else {
-        this._displayCouple();
       }
     },
     
+    _processCouple: function(){
+      this.husbandId = this.couple.getHusbandId();
+      this.wifeId = this.couple.getWifeId();
+    },
+    
     _loadChildren: function(){
-      if(!this.childrenRequested && this.includeChildren && this.husband && this.wife && this.isAuthenticated()){
+      if(this._loadChildrenReady()){
+        
         var self = this;
         this._setChildrenRequested(true);
-        this.husband.getChildren().then(function(response){
+        
+        var parent = this.husband;
+        if(!(parent instanceof FamilySearch.Person)){
+          parent = this.wife;
+        }
+        
+        // TODO: just load children relationships when available; this method
+        // currently loads the children objects too.
+        // https://github.com/FamilySearch/familysearch-javascript-sdk/issues/108
+        parent.getChildren().then(function(response){
+          
+          // We wait to calculate the spouse ID until after the respone
+          // returns so that there's time to set both spouses. If the spouses
+          // are being set via JavaScript then this method will fire after the
+          // first spouse is set. Having one spouse is sometimes valid so we
+          // continue loading; we have no way of knowing if the user intends
+          // to set the other spouse too. But by time the response is ready
+          // we can be sure the user had time to set both spouses.
+          // So now we calculate the ID of the spouse.
+          var husbandId, wifeId;
+          if(self.husband){
+            husbandId = self.husband.getId();
+          }
+          if(self.wife){
+            wifeId = self.wife.getId();
+          }
+          
           var relationships = response.getChildAndParentsRelationships(),
               rel;
           for(var i = 0; i < relationships.length; i++){
             rel = relationships[i];
             
             // Make sure we have the right spouse
-            if(rel.getMotherId() === self.wife.getId()){
+            if(rel.getFatherId() === husbandId && rel.getMotherId() === wifeId){
               self.push('_childrenIds', rel.getChildId());
             }
           }
@@ -198,13 +235,12 @@ You may have the children list collapsed by default:
     },
     
     /**
-     * Update the current display, if we need to
+     * Are we ready to load children?
      */
-    _displayCouple: function(){
-      if(this.couple){
-        this.$.husbandChip.personId = this.couple.getHusbandId();
-        this.$.wifeChip.personId = this.couple.getWifeId();
-      }
+    _loadChildrenReady: function(){
+      return this.isAuthenticated() && !this.childrenRequested && this.includeChildren
+        && ((this.husband && this.husband instanceof FamilySearch.Person)
+          || (this.wife && this.wife instanceof FamilySearch.Person));
     },
     
     _buttonText: function(){

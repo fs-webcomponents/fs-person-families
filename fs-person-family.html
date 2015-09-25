@@ -2,7 +2,6 @@
 <link rel="import" href="../fs-behavior/fs-behavior.html">
 <link rel="import" href="../fs-client/fs-client.html">
 <link rel="import" href="../fs-person-family/fs-family.html">
-<link rel="import" href="../paper-card/paper-card.html">
 
 <!--
 Display a FamilySearch person's family.
@@ -40,24 +39,22 @@ Basic example:
       }
     </style>
     <fs-client client-name="{{clientName}}" on-authenticated-changed="_loadFamily"></fs-client>
-    <paper-card>
-      <div class="card-content">
-        <div id="columns">
-          <div class="column">
-            <div class="col-title">Spouses and Children</div>
-            <div id="spouses">
-              <template is="dom-repeat" items="{{_spouseUrls}}">
-                <fs-family client-name="{{clientName}}" couple-url="{{item}}" include-children></fs-family>
-              </template>
-            </div>
-          </div>
-          <div class="column">
-            <div class="col-title">Parents and Siblings</div>
-            <div id="parents"></div>
+    <div class="card-content">
+      <div id="columns">
+        <div class="column">
+          <div class="col-title">Spouses and Children</div>
+          <div id="spouses">
+            <template is="dom-repeat" items="{{_spouseUrls}}">
+              <fs-family client-name="{{clientName}}" couple-url="{{item}}" include-children></fs-family>
+            </template>
           </div>
         </div>
+        <div class="column">
+          <div class="col-title">Parents and Siblings</div>
+          <div id="parents"></div>
+        </div>
       </div>
-    </paper-card>
+    </div>
   </template>
 </dom-module>
 
@@ -111,10 +108,17 @@ Basic example:
     
     _displayFamily: function(){
       if(this._familyResponse){
+        
+        // Spouses and children
         var spouseRels = this._familyResponse.getSpouseRelationships();
         for(var i = 0; i < spouseRels.length; i++){
           this.push('_spouseUrls', spouseRels[i].getCoupleUrl());
         }
+        
+        // Parents and siblings
+        // We have the parents but not a couple rel for them.
+        // We'll need to set the husband,wife on the `fs-family` element
+        // instead of the couple rel.
       }
     }
     

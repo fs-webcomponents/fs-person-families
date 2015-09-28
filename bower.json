@@ -1,6 +1,6 @@
 {
   "name": "fs-person-family",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "authors": [
     "Justin York"
   ],
@@ -21,7 +21,7 @@
     "polymer": "Polymer/polymer#^1.0.0",
     "fs-client": "fs-webcomponents/fs-client#~0.1.9",
     "fs-behavior": "fs-webcomponents/fs-behavior#~0.1.4",
-    "fs-family": "fs-webcomponents/fs-family#~0.1.0"
+    "fs-family": "fs-webcomponents/fs-family#~0.1.1"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

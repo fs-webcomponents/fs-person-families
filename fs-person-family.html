@@ -72,7 +72,7 @@ Basic example:
       
       personId: {
         type: String,
-        observer: '_loadFamily'
+        observer: '_personIdChanged'
       },
       
       requested: {
@@ -84,17 +84,22 @@ Basic example:
       _familyResponse: {
         type: Object,
         readOnly: true,
+        value: null,
         observer: '_displayFamily'
       },
       
       _spouseUrls: {
         type: Array,
-        value: []
+        value: function(){
+          return [];
+        }
       },
       
       _parentIds: {
         type: Array,
-        value: []
+        value: function(){
+          return [];
+        }
       }
       
     },
@@ -103,6 +108,17 @@ Basic example:
     
     _authChanged: function(event){
       this._loadFamily();
+    },
+    
+    _personIdChanged: function(){
+      if(this.personId){
+        this._loadFamily();
+      } else {
+        this._setRequested(false);
+        this._spouseUrls = [];
+        this._parentIds = [];
+        this._set_familyResponse(null);
+      }
     },
     
     _loadFamily: function(){

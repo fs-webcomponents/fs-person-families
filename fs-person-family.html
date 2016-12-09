@@ -1,7 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../fs-behavior/fs-behavior.html">
 <link rel="import" href="../fs-client/fs-client.html">
-<link rel="import" href="../fs-family.html">
+<link rel="import" href="fs-family.html">
 
 <!--
 Display a FamilySearch person's families. A person's families include families
@@ -130,12 +130,64 @@ Basic example:
       }
     },
     
+    /**
+     * Given the response body of a call to the Person's Families resource,
+     * return a list of families in {father, mother, children[]} format.
+     */
     _calculateFamilies: function(data){
       // I need to process the relationships in the response data to create
       // families. {father, mother, children}
       //
       // Don't forget to use this.push('path', data) so that Polymer knows the data has
       // been updated and that the display should also be updated.
+      
+      // We put all persons into a map keyed by their ID for easy access
+      var persons = {};
+      for(i = 0; i < data.persons.length; i++){
+        persons[data.persons[i].id] = data.persons[i];
+      }
+      
+      // Lets use the childAndParents relationships; they specify the ids of all
+      // persons involved. We'll construct families by maintaining a map of
+      // family keys. The keys will be [husband]:[wife]. 
+      var families = {},
+          caprs = data.childAndParentsRelationships,
+          rel, familyId, father, fatherId, mother, motherId, childId;
+      for(var i = 0; i < caprs.length; i++){
+        rel = caprs[i];
+        father = rel.father;
+        fatherId = father ? father.resourceId : '';
+        mother = rel.mother;
+        motherId = mother ? mother.resourceId : '';
+        familyId = fatherId + ':' + motherId;
+        childId = rel.child.resourceId;
+        
+        // The API is currently returning relationships for families of children
+        // so we need to ignore those.
+        if((fatherId && fatherId === this.personId) || (motherId && motherId === this.personId) || childId === this.personId){
+          if(!families[familyId]){
+            families[familyId] = {
+              father: persons[fatherId],
+              mother: persons[motherId],
+              children: []
+            };
+          }
+          families[familyId].children.push(persons[childId]);
+        }
+      }
+      
+      // Now we put the family objects in their proper category. We know that
+      // the persons is either a parent or a child in the families so we check
+      // if the personId is in the familyId [fatherId]:[motherId]. If yes then
+      // this is a parent family; if not then it's a child family.
+      for(familyId in families){
+        if(familyId.indexOf(this.personId) >= 0){
+          this.push('_parentFamilies', families[familyId]);
+        } else {
+          this.push('_childFamilies', families[familyId]);
+        }
+      }
+      
     }
     
   });

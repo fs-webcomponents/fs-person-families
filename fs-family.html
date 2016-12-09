@@ -55,15 +55,15 @@ You may have the children list collapsed by default:
     </style>
     <paper-card>
       <div class="card-content">
-        <fs-person-chip id="husbandChip" client-name="[[clientName]]" person="[[family.husband]]"></fs-person-chip>
-        <fs-person-chip id="wifeChip" client-name="[[clientName]]" person="[[family.wife]]"></fs-person-chip>
+        <fs-person-chip id="husbandChip" client-name="[[clientName]]" person="[[family.father]]"></fs-person-chip>
+        <fs-person-chip id="wifeChip" client-name="[[clientName]]" person="[[family.mother]]"></fs-person-chip>
       </div>
       <div id="children">
         <paper-button id="childrenButton" on-click="_toggleChildren" noink>{{_buttonText(childrenCollapsed)}}</paper-button>
         <iron-collapse id="collapse" opened="[[!childrenCollapsed]]">
           <div id="childrenList">
             <template is="dom-repeat" items="[[family.children]]">
-              <fs-person-chip client-name="[[clientName]]" person="{{item}}"></fs-person-chip>
+              <fs-person-chip client-name="[[clientName]]" person="[[item]]"></fs-person-chip>
             </template>
             <div id="noChildren" hidden$="[[family.children.length]]">No children</div>
           </div>
@@ -86,7 +86,7 @@ You may have the children list collapsed by default:
     properties: {
       
       /**
-       * A family object has the form {husband, spouse, children[]}
+       * A family object has the form {father, mother, children[]}
        */
       family: {
         type: Object

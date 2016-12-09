@@ -1,10 +1,11 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../fs-behavior/fs-behavior.html">
 <link rel="import" href="../fs-client/fs-client.html">
-<link rel="import" href="../fs-family/fs-family.html">
+<link rel="import" href="../fs-family.html">
 
 <!--
-Display a FamilySearch person's family.
+Display a FamilySearch person's families. A person's families include families
+in which they are a child and families in which they are a spouse or parent.
 
 Basic example:
 
@@ -38,22 +39,22 @@ Basic example:
         margin-top: 16px;
       }
     </style>
-    <fs-client name="[[clientName]]" on-authenticated-changed="_loadFamily"></fs-client>
+    <fs-client name="[[clientName]]" on-authenticated-changed="_loadFamilies"></fs-client>
     <div class="card-content">
       <div id="columns">
         <div class="column">
           <div class="col-title">Spouses and Children</div>
           <div>
-            <template is="dom-repeat" items="{{_spouseUrls}}">
-              <fs-family client-name="[[clientName]]" couple-url="{{item}}" include-children></fs-family>
+            <template is="dom-repeat" items="{{_parentFamilies}}">
+              <fs-family family="[[item]]" client-name="[[clientName]]"></fs-family>
             </template>
           </div>
         </div>
         <div class="column">
           <div class="col-title">Parents and Siblings</div>
           <div>
-            <template is="dom-repeat" items="{{_parentIds}}">
-              <fs-family client-name="[[clientName]]" husband-id="{{item.husbandId}}" wife-id="{{item.wifeId}}" include-children></fs-family>
+            <template is="dom-repeat" items="{{_childFamilies}}">
+              <fs-family family="[[item]]" client-name="[[clientName]]"></fs-family>
             </template>
           </div>
         </div>
@@ -81,21 +82,16 @@ Basic example:
         value: false
       },
       
-      _familyResponse: {
-        type: Object,
-        readOnly: true,
-        value: null,
-        observer: '_displayFamily'
-      },
-      
-      _spouseUrls: {
+      // List of families where the person is a child
+      _childFamilies: {
         type: Array,
         value: function(){
           return [];
         }
       },
       
-      _parentIds: {
+      // List of families where the perosn is a spouse
+      _parentFamilies: {
         type: Array,
         value: function(){
           return [];
@@ -107,49 +103,39 @@ Basic example:
     behaviors: [FSBehavior],
     
     _authChanged: function(event){
-      this._loadFamily();
+      this._loadFamilies();
     },
     
     _personIdChanged: function(){
       if(this.personId){
-        this._loadFamily();
+        this._loadFamilies();
       } else {
         this._setRequested(false);
-        this._spouseUrls = [];
-        this._parentIds = [];
-        this._set_familyResponse(null);
+        this._childFamilies = [];
+        this._parentFamilies = [];
       }
     },
     
-    _loadFamily: function(){
+    _loadFamilies: function(){
       var self = this;
       if(this.isAuthenticated() && this.personId && !this.requested){
         this._setRequested(true);
-        this.getClient().getPersonWithRelationships(this.personId).then(function(response){
-          self._set_familyResponse(response);
+        this.getClient().get('/platform/tree/persons/' + this.personId + '/families', function(error, response){
+          if(response && response.statusCode === 200){
+            self._calculateFamilies(response.data);
+          } else {
+            console.log('no family data');
+          }
         });
       }
     },
     
-    _displayFamily: function(){
-      if(this._familyResponse){
-        
-        // Spouses and children
-        var spouseRels = this._familyResponse.getSpouseRelationships();
-        for(var i = 0; i < spouseRels.length; i++){
-          this.push('_spouseUrls', spouseRels[i].getCoupleUrl());
-        }
-        
-        // Parents and siblings
-        var parentRels = this._familyResponse.getParentRelationships();
-        for(var i = 0; i < parentRels.length; i++){
-          var rel = parentRels[i];
-          this.push('_parentIds', {
-            husbandId: rel.getFatherId(),
-            wifeId: rel.getMotherId()
-          });
-        }
-      }
+    _calculateFamilies: function(data){
+      // I need to process the relationships in the response data to create
+      // families. {father, mother, children}
+      //
+      // Don't forget to use this.push('path', data) so that Polymer knows the data has
+      // been updated and that the display should also be updated.
     }
     
   });

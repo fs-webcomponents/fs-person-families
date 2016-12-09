@@ -1,5 +1,5 @@
 {
-  "name": "fs-person-family",
+  "name": "fs-person-families",
   "version": "0.1.4",
   "authors": [
     "Justin York"
@@ -10,9 +10,9 @@
     "polymer",
     "FamilySearch"
   ],
-  "main": "fs-person-family.html",
+  "main": "fs-person-families.html",
   "license": "MIT",
-  "homepage": "https://github.com/fs-webcomponents/fs-person-family/",
+  "homepage": "https://github.com/fs-webcomponents/fs-person-families/",
   "ignore": [
     "/.*",
     "/test/"

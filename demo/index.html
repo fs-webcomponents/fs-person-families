@@ -23,5 +23,13 @@
     
     <fs-person-families person-id="KWCF-GK5"></fs-person-families>
 
+    <script>
+      var families = document.querySelector('fs-person-families');
+      families.addEventListener('person-tap', function(e){
+        if(e.detail.personId){
+          families.personId = e.detail.personId;
+        }
+      });
+    </script>
   </body>
 </html>

@@ -134,11 +134,6 @@ Basic example:
      * return a list of families in {father, mother, children[]} format.
      */
     _calculateFamilies: function(data){
-      // I need to process the relationships in the response data to create
-      // families. {father, mother, children}
-      //
-      // Don't forget to use this.push('path', data) so that Polymer knows the data has
-      // been updated and that the display should also be updated.
       
       // We put all persons into a map keyed by their ID for easy access
       var persons = {};
@@ -161,9 +156,12 @@ Basic example:
         familyId = fatherId + ':' + motherId;
         childId = rel.child.resourceId;
         
-        // The API is currently returning relationships for families of children
-        // so we need to ignore those.
-        if((fatherId && fatherId === this.personId) || (motherId && motherId === this.personId) || childId === this.personId){
+        // Ignore relationships involving people that aren't returned in the
+        // persons list. They are from families of parents or children that this
+        // person isn't part of. I don't know why the API is returning their relationships.
+        if(persons[childId]
+             && (!fatherId || (fatherId && persons[fatherId]))
+             && (!motherId || (motherId && persons[motherId]))){
           if(!families[familyId]){
             families[familyId] = {
               father: persons[fatherId],

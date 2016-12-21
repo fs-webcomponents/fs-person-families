@@ -1,0 +1,41 @@
+{
+  "name": "fs-person-chip",
+  "authors": [
+    "Justin York"
+  ],
+  "description": "Display the portrait, name, and lifespan of a person.",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "FamilySearch"
+  ],
+  "main": "fs-person-chip.html",
+  "license": "MIT",
+  "homepage": "https://github.com/fs-webcomponents/fs-person-chip/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "fs-client": "fs-webcomponents/fs-client#^2.0.0",
+    "fs-person-portrait": "fs-webcomponents/fs-person-portrait#^2.0.0",
+    "fs-person-behavior": "fs-webcomponents/fs-person-behavior#^2.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "fs-signin": "fs-webcomponents/fs-signin#^2.0.0",
+    "paper-card": "PolymerElements/paper-card#^1.0.5",
+    "fs-client": "fs-webcomponents/fs-client#^2.0.0"
+  },
+  "version": "2.0.1",
+  "_release": "2.0.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "2.0.1",
+    "commit": "ceba5a8c47aa957822a86a1b9e0d1aca2bc86be0"
+  },
+  "_source": "git://github.com/fs-webcomponents/fs-person-chip.git",
+  "_target": "^2.0.0",
+  "_originalSource": "fs-webcomponents/fs-person-chip"
+}

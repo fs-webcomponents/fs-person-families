@@ -1,0 +1,201 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../fs-behavior/fs-behavior.html">
+<link rel="import" href="../fs-client/fs-client.html">
+<link rel="import" href="fs-family.html">
+
+<!--
+Display a FamilySearch person's families. A person's families include families
+in which they are a child and families in which they are a spouse or parent.
+
+Basic example:
+
+    <fs-person-families person-id="PPP-PPPP"></fs-person-families>
+
+@group FamilySearch Elements
+@element fs-person-families
+@demo demo/index.html
+-->
+<dom-module id="fs-person-families">
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+      }
+      
+      paper-card {
+        width: 100%;
+      }
+      
+      #columns {
+        display: flex;
+      }
+      
+      .column {
+        flex-grow: 1;
+      }
+      
+      fs-family {
+        margin-top: 16px;
+      }
+    </style>
+    <fs-client name="[[clientName]]" on-authenticated-changed="_loadFamilies"></fs-client>
+    <div class="card-content">
+      <div id="columns">
+        <div class="column">
+          <div class="col-title">Spouses and Children</div>
+          <div>
+            <template is="dom-repeat" items="{{_parentFamilies}}">
+              <fs-family family="[[item]]" client-name="[[clientName]]"></fs-family>
+            </template>
+          </div>
+        </div>
+        <div class="column">
+          <div class="col-title">Parents and Siblings</div>
+          <div>
+            <template is="dom-repeat" items="{{_childFamilies}}">
+              <fs-family family="[[item]]" client-name="[[clientName]]"></fs-family>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'fs-person-families',
+    
+    properties: {
+      
+      personId: {
+        type: String,
+        observer: '_personIdChanged'
+      },
+      
+      requested: {
+        type: Boolean,
+        readOnly: true,
+        value: false
+      },
+      
+      loading: {
+        type: Boolean,
+        readOnly: true,
+        value: false,
+        notify: true
+      },
+      
+      // List of families where the person is a child
+      _childFamilies: {
+        type: Array,
+        value: function(){
+          return [];
+        }
+      },
+      
+      // List of families where the person is a spouse
+      _parentFamilies: {
+        type: Array,
+        value: function(){
+          return [];
+        }
+      }
+      
+    },
+
+    behaviors: [FSBehavior],
+    
+    _authChanged: function(event){
+      this._loadFamilies();
+    },
+    
+    _personIdChanged: function(){
+      this._setRequested(false);
+      this._childFamilies = [];
+      this._parentFamilies = [];
+      if(this.personId){
+        this._loadFamilies();
+      }
+    },
+    
+    _loadFamilies: function(){
+      var self = this;
+      if(this.isAuthenticated() && this.personId && !this.requested){
+        this._setRequested(true);
+        this._setLoading(true);
+        this.getClient().get('/platform/tree/persons/' + this.personId + '/families', function(error, response){
+          self._setLoading(false);
+          if(response && response.statusCode === 200){
+            self._calculateFamilies(response.data);
+          } else {
+            console.log('no family data');
+          }
+        });
+      }
+    },
+    
+    /**
+     * Given the response body of a call to the Person's Families resource,
+     * return a list of families in {father, mother, children[]} format.
+     */
+    _calculateFamilies: function(data){
+      
+      // We put all persons into a map keyed by their ID for easy access
+      var persons = {};
+      for(i = 0; i < data.persons.length; i++){
+        persons[data.persons[i].id] = data.persons[i];
+      }
+      
+      // Lets use the childAndParents relationships; they specify the ids of all
+      // persons involved. We'll construct families by maintaining a map of
+      // family keys. The keys will be [husband]:[wife]. 
+      var families = {},
+          caprs = data.childAndParentsRelationships,
+          rel, familyId, father, fatherId, mother, motherId, childId;
+      for(var i = 0; i < caprs.length; i++){
+        rel = caprs[i];
+        father = rel.father;
+        fatherId = father ? father.resourceId : '';
+        mother = rel.mother;
+        motherId = mother ? mother.resourceId : '';
+        familyId = fatherId + ':' + motherId;
+        childId = rel.child.resourceId;
+        
+        // Ignore relationships involving people that aren't returned in the
+        // persons list. They are from families of parents or children that this
+        // person isn't part of. I don't know why the API is returning their relationships.
+        if(persons[childId]
+             && (!fatherId || (fatherId && persons[fatherId]))
+             && (!motherId || (motherId && persons[motherId]))){
+          if(!families[familyId]){
+            families[familyId] = {
+              father: persons[fatherId],
+              mother: persons[motherId],
+              children: []
+            };
+          }
+          families[familyId].children.push(persons[childId]);
+        }
+      }
+      
+      // Now we put the family objects in their proper category. We know that
+      // the persons is either a parent or a child in the families so we check
+      // if the personId is in the familyId [fatherId]:[motherId]. If yes then
+      // this is a parent family; if not then it's a child family.
+      for(familyId in families){
+        if(familyId.indexOf(this.personId) >= 0){
+          this.push('_parentFamilies', families[familyId]);
+        } else {
+          this.push('_childFamilies', families[familyId]);
+        }
+      }
+      
+    }
+    
+  });
+
+</script>

@@ -1,0 +1,80 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../fs-client/fs-client.html">
+<link rel="import" href="../fs-person-behavior/fs-person-behavior.html">
+<link rel="import" href="../fs-person-portrait/fs-person-portrait.html">
+
+<!--
+Display the portrait, name, lifespan, and ID of a FamilySearch person.
+
+Basic example:
+
+    <fs-person-chip person-id="PPP-PPPP"></fs-person-chip>
+
+### Styling
+
+The following custom properties are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--fs-person-chip-hover` | Mixin applied on hover | {}
+
+@group FamilySearch Elements
+@element fs-person-chip
+@demo demo/index.html
+-->
+<dom-module id="fs-person-chip">
+  <template>
+    <style>
+      :host {
+        overflow: auto;
+        display: block;
+      }
+      
+      #details {
+        font-size: smaller;
+      }
+    
+      fs-person-portrait {
+        float: left;
+        margin-right: 16px;
+        --fs-person-portrait-size: 40px;
+        --fs-person-portrait-border-radius: 20px;
+      }
+      
+      :host:hover {
+        @apply(--fs-person-chip-hover);
+      }
+    </style>
+    <fs-client name="[[clientName]]" on-authenticated-changed="_authenticatedChanged"></fs-client>
+    <fs-person-portrait person="[[person]]"></fs-person-portrait>
+    <div id="name">Loading...</div>
+    <div id="details">
+      <span id="lifespan"></span> • <span id="pid"></span>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'fs-person-chip',
+    
+    behaviors: [FSPersonBehavior],
+    
+    _personChanged: function(){
+      if(this.person){
+        this.$.name.textContent = this.person.display.name;
+        this.$.lifespan.textContent = this.person.display.lifespan;
+        this.$.pid.textContent = this.person.id;
+      } else {
+        this.$.name.textContent = '';
+        this.$.lifespan.textContent = '';
+        this.$.pid.textContent = '';
+      }
+    }
+    
+  });
+
+</script>

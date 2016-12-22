@@ -84,7 +84,8 @@ You may have the children list collapsed by default:
     behaviors: [FSBehavior],
     
     /**
-     * Fired when a person is tapped.
+     * Fired when a person is tapped. The event details will contain the same
+     * details as a click event with an added `personId` property.
      *
      * @event person-tap
      * @param {{personId:string}} ID of the person that was clicked.

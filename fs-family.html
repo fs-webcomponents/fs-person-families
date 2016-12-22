@@ -119,20 +119,25 @@ You may have the children list collapsed by default:
       this.childrenCollapsed = !this.childrenCollapsed;
     },
     
-    _fatherTap: function(){
+    _fatherTap: function(e){
       if(this.family.father){
-        this.fire('person-tap', {personId: this.family.father.id});
+        this._firePersonTap(e, this.family.father.id);
       }
     },
     
-    _motherTap: function(){
+    _motherTap: function(e){
       if(this.family.mother){
-        this.fire('person-tap', {personId: this.family.mother.id});
+        this._firePersonTap(e, this.family.mother.id);
       }
     },
     
     _childTap: function(e){
-      this.fire('person-tap', {personId: e.model.item.id});
+      this._firePersonTap(e, e.model.item.id);
+    },
+    
+    _firePersonTap: function(e, personId){
+      e.detail.personId = personId;
+      this.fire('person-tap', e.detail);
     }
     
   });

@@ -71,75 +71,101 @@ You may have the children list collapsed by default:
       </div>
     </paper-card>
   </template>
-</dom-module>
-
-<script>
-  Polymer({
-    
-    is: 'fs-family',
-    
-    // This is needed so that we can pass down the value of clientName from
-    // the parent element fs-person-family to child elements fs-person-chip.
-    // This element doesn't actually use the client.
-    behaviors: [FSBehavior],
-    
-    /**
-     * Fired when a person is tapped. The event details will contain the same
-     * details as a click event with an added `personId` property.
-     *
-     * @event person-tap
-     * @param {{personId:string}} ID of the person that was clicked.
-     */
-    
-    properties: {
+  <script>
+    Polymer({
+      
+      is: 'fs-family',
+      
+      // This is needed so that we can pass down the value of clientName from
+      // the parent element fs-person-family to child elements fs-person-chip.
+      // This element doesn't actually use the client.
+      behaviors: [FSBehavior],
       
       /**
-       * A family object has the form {father, mother, children[]}
+       * Fired when a person is tapped. The event details will contain the same
+       * details as a click event with an added `personId` property.
+       *
+       * @event person-tap
+       * @param {{personId:string}} ID of the person that was clicked.
        */
-      family: {
-        type: Object
+      
+      properties: {
+        
+        test: {
+          type: Object,
+          value: {
+            personId: 'KWCF-GK5',
+            person: {
+              "id": "KWWC-RCL",
+              "display": {
+                "name": "George Allen Stewart",
+                "gender": "Male",
+                "lifespan": "1835-Deceased"
+              }
+            }
+          }
+        },
+        
+        testPerson: {
+          type: Object,
+          value: {
+            "id": "KWWC-RCL",
+            "display": {
+              "name": "George Allen Stewart",
+              "gender": "Male",
+              "lifespan": "1835-Deceased"
+            }
+          }
+        },
+        
+        /**
+         * A family object has the form {father, mother, children[]}
+         */
+        family: {
+          type: Object
+        },
+        
+        /**
+         * When true the children list will be collapsed by default. This is only
+         * used if `includeChildren` is true.
+         */
+        childrenCollapsed: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        }
+        
       },
       
-      /**
-       * When true the children list will be collapsed by default. This is only
-       * used if `includeChildren` is true.
-       */
-      childrenCollapsed: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false
+      _buttonText: function(){
+        return this.childrenCollapsed ? 'Show Children' : 'Hide Children';
+      },
+      
+      _toggleChildren: function(){
+        this.childrenCollapsed = !this.childrenCollapsed;
+      },
+      
+      _fatherTap: function(e){
+        if(this.family.father){
+          this._firePersonTap(e, this.family.father.id);
+        }
+      },
+      
+      _motherTap: function(e){
+        if(this.family.mother){
+          this._firePersonTap(e, this.family.mother.id);
+        }
+      },
+      
+      _childTap: function(e){
+        this._firePersonTap(e, e.model.item.id);
+      },
+      
+      _firePersonTap: function(e, personId){
+        e.detail.personId = personId;
+        this.fire('person-tap', e.detail);
       }
       
-    },
-    
-    _buttonText: function(){
-      return this.childrenCollapsed ? 'Show Children' : 'Hide Children';
-    },
-    
-    _toggleChildren: function(){
-      this.childrenCollapsed = !this.childrenCollapsed;
-    },
-    
-    _fatherTap: function(e){
-      if(this.family.father){
-        this._firePersonTap(e, this.family.father.id);
-      }
-    },
-    
-    _motherTap: function(e){
-      if(this.family.mother){
-        this._firePersonTap(e, this.family.mother.id);
-      }
-    },
-    
-    _childTap: function(e){
-      this._firePersonTap(e, e.model.item.id);
-    },
-    
-    _firePersonTap: function(e, personId){
-      e.detail.personId = personId;
-      this.fire('person-tap', e.detail);
-    }
-    
-  });
-</script>
+    });
+  </script>
+</dom-module>

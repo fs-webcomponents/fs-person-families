@@ -131,8 +131,6 @@ Basic example:
           self._setLoading(false);
           if(response && response.statusCode === 200){
             self._calculateFamilies(response.data);
-          } else {
-            console.log('no family data');
           }
         });
       }

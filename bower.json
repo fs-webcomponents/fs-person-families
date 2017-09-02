@@ -3,6 +3,7 @@
   "authors": [
     "Justin York"
   ],
+  "version": "3.0.0",
   "description": "Polymer element that displays a FamilySearch person's families.",
   "keywords": [
     "web-component",

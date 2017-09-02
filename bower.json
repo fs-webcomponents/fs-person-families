@@ -18,16 +18,16 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
-    "fs-client": "fs-webcomponents/fs-client#polymer-2",
-    "fs-behavior": "fs-webcomponents/fs-behavior#polymer-2",
-    "paper-card": "PolymerElements/paper-card#2.0-preview",
-    "fs-person-chip": "fs-webcomponents/fs-person-chip#polymer-2",
-    "iron-collapse": "PolymerElements/iron-collapse#2.0-preview",
-    "paper-button": "PolymerElements/paper-button#2.0-preview"
+    "fs-client": "fs-webcomponents/fs-client#^3.0.0",
+    "fs-behavior": "fs-webcomponents/fs-behavior#^3.0.0",
+    "fs-person-chip": "fs-webcomponents/fs-person-chip#^3.0.0",
+    "paper-card": "PolymerElements/paper-card#^2.0.0",
+    "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
+    "paper-button": "PolymerElements/paper-button#^2.0.0"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#2.0-preview",
-    "fs-signin": "fs-webcomponents/fs-signin#polymer-2",
-    "paper-input": "PolymerElements/paper-input#2.0-preview"
+    "iron-component-page": "PolymerElements/iron-component-page#^3.0.0",
+    "fs-signin": "fs-webcomponents/fs-signin#^3.0.0",
+    "paper-input": "PolymerElements/paper-input#^2.0.0"
   }
 }

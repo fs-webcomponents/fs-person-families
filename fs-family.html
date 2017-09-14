@@ -1,5 +1,5 @@
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../fs-behavior/fs-behavior.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../fs-api-aware/fs-api-aware.html">
 <link rel="import" href="../fs-person-chip/fs-person-chip.html">
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-button/paper-button.html">
@@ -17,7 +17,8 @@ You may have the children list collapsed by default:
     <fs-family family="[[family]]" children-collapsed></fs-family>
     
 @group FamilySearch Elements
-@element fs-family
+@customElement
+@polymer
 @demo demo/index.html
 -->
 
@@ -72,14 +73,9 @@ You may have the children list collapsed by default:
     </paper-card>
   </template>
   <script>
-    Polymer({
+    class FSFamily extends FSApiAwareMixin(Polymer.Element) {
       
-      is: 'fs-family',
-      
-      // This is needed so that we can pass down the value of clientName from
-      // the parent element fs-person-family to child elements fs-person-chip.
-      // This element doesn't actually use the client.
-      behaviors: [FSBehavior],
+      static get is() { return 'fs-family'; }
       
       /**
        * Fired when a person is tapped. The event details will contain the same
@@ -89,83 +85,64 @@ You may have the children list collapsed by default:
        * @param {{personId:string}} ID of the person that was clicked.
        */
       
-      properties: {
-        
-        test: {
-          type: Object,
-          value: {
-            personId: 'KWCF-GK5',
-            person: {
-              "id": "KWWC-RCL",
-              "display": {
-                "name": "George Allen Stewart",
-                "gender": "Male",
-                "lifespan": "1835-Deceased"
-              }
-            }
+      static get properties() {
+        return {
+          
+          /**
+           * A family object has the form {father, mother, children[]}
+           */
+          family: {
+            type: Object
+          },
+          
+          /**
+           * When true the children list will be collapsed by default. This is only
+           * used if `includeChildren` is true.
+           */
+          childrenCollapsed: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
           }
-        },
-        
-        testPerson: {
-          type: Object,
-          value: {
-            "id": "KWWC-RCL",
-            "display": {
-              "name": "George Allen Stewart",
-              "gender": "Male",
-              "lifespan": "1835-Deceased"
-            }
-          }
-        },
-        
-        /**
-         * A family object has the form {father, mother, children[]}
-         */
-        family: {
-          type: Object
-        },
-        
-        /**
-         * When true the children list will be collapsed by default. This is only
-         * used if `includeChildren` is true.
-         */
-        childrenCollapsed: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false
-        }
-        
-      },
+          
+        };
+      }
       
-      _buttonText: function(){
+      _buttonText() {
         return this.childrenCollapsed ? 'Show Children' : 'Hide Children';
-      },
+      }
       
-      _toggleChildren: function(){
+      _toggleChildren() {
         this.childrenCollapsed = !this.childrenCollapsed;
-      },
+      }
       
-      _fatherTap: function(e){
+      _fatherTap(e) {
         if(this.family.father){
           this._firePersonTap(e, this.family.father.id);
         }
-      },
+      }
       
-      _motherTap: function(e){
+      _motherTap(e) {
         if(this.family.mother){
           this._firePersonTap(e, this.family.mother.id);
         }
-      },
-      
-      _childTap: function(e){
-        this._firePersonTap(e, e.model.item.id);
-      },
-      
-      _firePersonTap: function(e, personId){
-        e.detail.personId = personId;
-        this.fire('person-tap', e.detail);
       }
       
-    });
+      _childTap(e) {
+        this._firePersonTap(e, e.model.item.id);
+      }
+      
+      _firePersonTap(e, personId) {
+        e.detail.personId = personId;
+        this.dispatchEvent(new CustomEvent('person-tap', {
+          detail: e.detail,
+          bubbles: true,
+          composed: true
+        }));
+      }
+      
+    }
+    
+    customElements.define(FSFamily.is, FSFamily);
   </script>
 </dom-module>

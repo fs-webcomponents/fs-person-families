@@ -46,8 +46,7 @@ Basic example:
       require-authentication
       url="{{_computeUrl(personId)}}"
       on-response="_handleResponse"
-      sent="{{requested}}"
-      loading="{{loading}}"></fs-client>
+      loading="{{loading}}"></fs-request>
     <div class="card-content">
       <div id="columns">
         <div class="column">
@@ -81,17 +80,9 @@ Basic example:
             observer: '_personIdChanged'
           },
           
-          /** Whether the API request for the person's families has been sent */
-          requested: {
-            type: Boolean,
-            readOnly: true,
-            value: false
-          },
-          
           /** Whether the API request is still oustanding */
           loading: {
             type: Boolean,
-            readOnly: true,
             value: false,
             notify: true
           },
@@ -116,14 +107,8 @@ Basic example:
       }
   
       _personIdChanged() {
-        this._setRequested(false);
         this._childFamilies = [];
         this._parentFamilies = [];
-        /*
-        if(this.personId) {
-          this.$.request.generateRequest();
-        }
-        */
       }
       
       _computeUrl() {

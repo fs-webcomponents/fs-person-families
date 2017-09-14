@@ -1,9 +1,6 @@
 {
   "name": "fs-person-families",
-  "authors": [
-    "Justin York"
-  ],
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Polymer element that displays a FamilySearch person's families.",
   "keywords": [
     "web-component",
@@ -19,15 +16,15 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
-    "fs-api-aware": "fs-webcomponents/fs-api-aware",
-    "fs-request": "fs-webcomponents/fs-request#v4",
-    "fs-person-chip": "fs-webcomponents/fs-person-chip#v4",
+    "fs-api-aware": "fs-webcomponents/fs-api-aware#^4.0.0",
+    "fs-request": "fs-webcomponents/fs-request#^4.0.0",
+    "fs-person-chip": "fs-webcomponents/fs-person-chip#^4.0.0",
     "paper-card": "PolymerElements/paper-card#^2.0.0",
     "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
     "paper-button": "PolymerElements/paper-button#^2.0.0"
   },
   "devDependencies": {
-    "fs-signin": "fs-webcomponents/fs-signin#v4",
+    "fs-signin": "fs-webcomponents/fs-signin#^4.0.0",
     "paper-input": "PolymerElements/paper-input#^2.0.0"
   }
 }

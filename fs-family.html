@@ -4,6 +4,7 @@
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
 
 <!--
 Display a family.
@@ -73,7 +74,7 @@ You may have the children list collapsed by default:
     </paper-card>
   </template>
   <script>
-    class FSFamily extends FSApiAwareMixin(Polymer.Element) {
+    class FSFamily extends Polymer.GestureEventListeners(FSApiAwareMixin(Polymer.Element)) {
       
       static get is() { return 'fs-family'; }
       

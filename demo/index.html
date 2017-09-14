@@ -12,34 +12,42 @@
     <link rel="import" href="../../paper-input/paper-input.html">
   </head>
   <body unresolved>
-    <custom-style>
-      <style is="custom-style">
-        fs-person-families {
-          margin-top: 16px;
-          max-width: 700px;
-        }
-        
-        paper-input {
-          max-width: 200px;
-        }
-      </style>
-    </custom-style>
+    <style>
+      fs-person-families {
+        margin-top: 16px;
+        max-width: 700px;
+      }
+      
+      paper-input {
+        max-width: 200px;
+      }
+    </style>
 
     <fs-client id="client" app-key="a02j00000099Mc2AAE" redirect-uri="." save-access-token exchange-code redirect-after-sign-in="."></fs-client>
     <fs-signin></fs-signin>
     
     <paper-input id="person-id" label="person ID" value="KWCF-GK5"></paper-input>
-    <fs-person-families person-id="KWCF-GK5"></fs-person-families>
+    <fs-person-families person-id="KWCF-GK5" id="families"></fs-person-families>
 
     <script>
-      var families = document.querySelector('fs-person-families');
+      var families = document.getElementById('families');
+      var personId = document.getElementById('person-id');
+      
       families.addEventListener('person-tap', function(e){
         if(e.detail.personId){
           families.personId = e.detail.personId;
+          personId.value = e.detail.personId;
+        }
+      });
+      families.addEventListener('loading-changed', function(e){
+        if(e.detail.value) {
+          console.log('Loading...');
+        } else {
+          console.log('Done loading');
         }
       });
       
-      document.getElementById('person-id').addEventListener('change', function(e){
+      personId.addEventListener('change', function(e){
         if(this.value){
           families.personId = this.value;
         }

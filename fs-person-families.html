@@ -46,7 +46,7 @@ Basic example:
       require-authentication
       url="{{_computeUrl(personId)}}"
       on-response="_handleResponse"
-      loading="{{loading}}"></fs-request>
+      on-loading-changed="_updateLoading"></fs-request>
     <div class="card-content">
       <div id="columns">
         <div class="column">
@@ -84,7 +84,8 @@ Basic example:
           loading: {
             type: Boolean,
             value: false,
-            notify: true
+            notify: true,
+            readOnly: true
           },
           
           /** List of families where the person is a child */
@@ -104,6 +105,10 @@ Basic example:
           }
           
         };
+      }
+      
+      _updateLoading(e) {
+        this._setLoading(e.detail.value);
       }
   
       _personIdChanged() {

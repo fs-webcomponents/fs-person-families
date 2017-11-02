@@ -5,6 +5,7 @@
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
 
 <!--
 Display a family.
@@ -35,7 +36,7 @@ You may have the children list collapsed by default:
         width: 100%;
       }
       
-      #motherChip {
+      .card-content fs-person-chip:last-child {
         margin-top: 16px;
       }
       
@@ -58,16 +59,21 @@ You may have the children list collapsed by default:
     <paper-card>
       <div class="card-content">
         <fs-person-chip client-name="[[clientName]]" person="[[family.father]]" on-tap="_fatherTap"></fs-person-chip>
-        <fs-person-chip id="motherChip" client-name="[[clientName]]" person="[[family.mother]]" on-tap="_motherTap"></fs-person-chip>
+        <fs-person-chip client-name="[[clientName]]" person="[[family.mother]]" on-tap="_motherTap"></fs-person-chip>
       </div>
       <div id="children">
-        <paper-button id="childrenButton" on-click="_toggleChildren" noink>{{_buttonText(childrenCollapsed)}}</paper-button>
-        <iron-collapse id="collapse" opened="[[!childrenCollapsed]]">
+        <paper-button on-tap="_toggleChildren" noink>{{_buttonText(childrenCollapsed)}}</paper-button>
+        <iron-collapse opened="[[!childrenCollapsed]]">
           <div id="childrenList">
             <template is="dom-repeat" items="[[family.children]]">
               <fs-person-chip client-name="[[clientName]]" person="[[item]]" on-tap="_childTap"></fs-person-chip>
             </template>
-            <div id="noChildren" hidden$="[[family.children.length]]">No children</div>
+            <template is="dom-if" if="{{addPersons}}">
+              <paper-button on-tap="_addChild" noink>+ Add Child</paper-button>
+            </template>
+            <template is="dom-if" if="{{!addPersons}}">
+              <div id="noChildren" hidden$="[[family.children.length]]">No children</div>
+            </template>
           </div>
         </iron-collapse>
       </div>
@@ -104,6 +110,14 @@ You may have the children list collapsed by default:
             type: Boolean,
             reflectToAttribute: true,
             value: false
+          },
+          
+          /**
+           * Whether the Add Spouse and Add Child buttons should be shown
+           */
+          addPersons: {
+            type: Boolean,
+            value: false
           }
           
         };
@@ -137,6 +151,21 @@ You may have the children list collapsed by default:
         e.detail.personId = personId;
         this.dispatchEvent(new CustomEvent('person-tap', {
           detail: e.detail,
+          bubbles: true,
+          composed: true
+        }));
+      }
+      
+      _addChild() {
+        const detail = {};
+        if(this.family.father) {
+          detail.fatherId = this.family.father.id;
+        }
+        if(this.family.mother) {
+          detail.motherId = this.family.mother.id;
+        }
+        this.dispatchEvent(new CustomEvent('add-child', {
+          detail,
           bubbles: true,
           composed: true
         }));

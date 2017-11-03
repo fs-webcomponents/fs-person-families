@@ -64,6 +64,9 @@ Basic example:
                 on-add-father="_addCaprIds"></fs-family>
             </template>
           </div>
+          <template is="dom-if" if="addPersons">
+            <paper-button on-tap="_addChildUnknownParentEvent">{{_addChildUnknownParentLabel(_gender)}}</paper-button>
+          </template>
         </div>
         <div class="column">
           <div class="col-title">Parents and Siblings</div>
@@ -109,6 +112,9 @@ Basic example:
             value: false
           },
           
+          /** Main person's gender */
+          _gender: String,
+          
           /** List of families where the person is a child */
           _childFamilies: {
             type: Array,
@@ -130,6 +136,7 @@ Basic example:
       
       reload() {
         this._clearFamilies();
+        this._gender = undefined;
         this.$.request.generateRequest();
       }
       
@@ -166,6 +173,32 @@ Basic example:
         }));
       }
       
+      _addChildUnknownParentEvent() {
+        const detail = {};
+        if(this._gender === 'http://gedcomx.org/Male') {
+          detail.fatherId = this.personId;
+        }
+        if(this._gender === 'http://gedcomx.org/Female') {
+          detail.motherId = this.personId;
+        }
+        this.dispatchEvent(new CustomEvent('add-child-unknown-parent', {
+          detail,
+          bubbles: true,
+          composed: true
+        }));
+      }
+      
+      _addChildUnknownParentLabel(_gender) {
+        switch(_gender) {
+          case 'http://gedcomx.org/Male':
+            return '+ Add Child with an Unknown Mother';
+          case 'http://gedcomx.org/Female':
+            return '+ Add Child with an Unknown Father';
+          default:
+            return '+ Add Child of an Unknown Spouse';
+        }
+      }
+      
       _computeUrl() {
         if(this.personId) {
           return `/platform/tree/persons/${this.personId}/families`;
@@ -188,6 +221,9 @@ Basic example:
         var persons = {};
         for(i = 0; i < data.persons.length; i++){
           persons[data.persons[i].id] = data.persons[i];
+          if(data.persons[i].id === this.personId) {
+            this._gender = data.persons[i].gender.type;
+          }
         }
         
         // We'll construct families by maintaining a map of family keys. 

@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../fs-api-aware/fs-api-aware.html">
 <link rel="import" href="../fs-request/fs-request.html">
 <link rel="import" href="fs-family.html">
@@ -51,6 +52,9 @@ Basic example:
       <div id="columns">
         <div class="column">
           <div class="col-title">Spouses and Children</div>
+          <template is="dom-if" if="addPersons">
+            <paper-button on-tap="_addSpouseEvent">+ Add Spouse</paper-button>
+          </template>
           <div>
             <template is="dom-repeat" items="{{_parentFamilies}}">
               <fs-family family="[[item.persons]]" 
@@ -63,6 +67,9 @@ Basic example:
         </div>
         <div class="column">
           <div class="col-title">Parents and Siblings</div>
+          <template is="dom-if" if="addPersons">
+            <paper-button on-tap="_addParentEvent">+ Add Parent</paper-button>
+          </template>
           <div>
             <template is="dom-repeat" items="{{_childFamilies}}">
               <fs-family family="[[item.persons]]" 
@@ -121,13 +128,42 @@ Basic example:
         };
       }
       
+      reload() {
+        this._clearFamilies();
+        this.$.request.generateRequest();
+      }
+      
       _updateLoading(e) {
         this._setLoading(e.detail.value);
       }
   
       _personIdChanged() {
+        this._clearFamilies();
+      }
+      
+      _clearFamilies() {
         this._childFamilies = [];
         this._parentFamilies = [];
+      }
+      
+      _addParentEvent() {
+        this.dispatchEvent(new CustomEvent('add-parent', {
+          detail: {
+            childId: this.personId
+          },
+          bubbles: true,
+          composed: true
+        }));
+      }
+      
+      _addSpouseEvent() {
+        this.dispatchEvent(new CustomEvent('add-spouse', {
+          detail: {
+            spouseId: this.personId
+          },
+          bubbles: true,
+          composed: true
+        }));
       }
       
       _computeUrl() {
@@ -154,11 +190,27 @@ Basic example:
           persons[data.persons[i].id] = data.persons[i];
         }
         
-        // Lets use the childAndParents relationships; they specify the ids of all
-        // persons involved. We'll construct families by maintaining a map of
-        // family keys. The keys will be [husband]:[wife]. 
-        var families = {},
-            caprs = data.childAndParentsRelationships,
+        // We'll construct families by maintaining a map of family keys. 
+        // The keys will be [husband]:[wife].
+        var families = {};
+        
+        // First we process couple relationships where that the person is involved in.
+        var couples = Array.isArray(data.relationships) ? data.relationships.filter(r => r.type === 'http://gedcomx.org/Couple') : [];
+        couples.forEach((couple) => {
+          if(couple.person1.resourceId === this.personId || couple.person2.resourceId === this.personId) {
+            families[`${couple.person1.resourceId}:${couple.person2.resourceId}`] = {
+              persons: {
+                father: persons[couple.person1.resourceId],
+                mother: persons[couple.person2.resourceId],
+                children: []
+              },
+              caprIds: []
+            };
+          }
+        });
+        
+        // Now we process child and parents relationships of the person.
+        var caprs = data.childAndParentsRelationships,
             rel, familyId, father, fatherId, mother, motherId, childId;
         for(var i = 0; i < caprs.length; i++){
           rel = caprs[i];

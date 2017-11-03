@@ -34,7 +34,11 @@ Basic example:
       }
       
       .column {
-        flex-grow: 1;
+        flex: 1;
+      }
+      
+      .column:last-child {
+        margin-left: 32px;
       }
       
       fs-family {
@@ -55,15 +59,13 @@ Basic example:
           <template is="dom-if" if="addPersons">
             <paper-button on-tap="_addSpouseEvent">+ Add Spouse</paper-button>
           </template>
-          <div>
-            <template is="dom-repeat" items="{{_parentFamilies}}">
-              <fs-family family="[[item.persons]]" 
-                add-persons="[[addPersons]]" 
-                client-name="[[clientName]]" 
-                on-add-mother="_addCaprIds"
-                on-add-father="_addCaprIds"></fs-family>
-            </template>
-          </div>
+          <template is="dom-repeat" items="{{_parentFamilies}}">
+            <fs-family family="[[item.persons]]" 
+              add-persons="[[addPersons]]" 
+              client-name="[[clientName]]" 
+              on-add-mother="_addCaprIds"
+              on-add-father="_addCaprIds"></fs-family>
+          </template>
           <template is="dom-if" if="addPersons">
             <paper-button on-tap="_addChildUnknownParentEvent">{{_addChildUnknownParentLabel(_gender)}}</paper-button>
           </template>

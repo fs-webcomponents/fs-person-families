@@ -53,7 +53,11 @@ Basic example:
           <div class="col-title">Spouses and Children</div>
           <div>
             <template is="dom-repeat" items="{{_parentFamilies}}">
-              <fs-family family="[[item]]" client-name="[[clientName]]"></fs-family>
+              <fs-family family="[[item.persons]]" 
+                add-persons="[[addPersons]]" 
+                client-name="[[clientName]]" 
+                on-add-mother="_addCaprIds"
+                on-add-father="_addCaprIds"></fs-family>
             </template>
           </div>
         </div>
@@ -61,7 +65,11 @@ Basic example:
           <div class="col-title">Parents and Siblings</div>
           <div>
             <template is="dom-repeat" items="{{_childFamilies}}">
-              <fs-family family="[[item]]" client-name="[[clientName]]"></fs-family>
+              <fs-family family="[[item.persons]]" 
+                add-persons="[[addPersons]]" 
+                client-name="[[clientName]]" 
+                on-add-mother="_addCaprIds"
+                on-add-father="_addCaprIds"></fs-family>
             </template>
           </div>
         </div>
@@ -86,6 +94,12 @@ Basic example:
             value: false,
             notify: true,
             readOnly: true
+          },
+          
+          /** Whether to show buttons for adding persons */
+          addPersons: {
+            type: Boolean,
+            value: false
           },
           
           /** List of families where the person is a child */
@@ -163,12 +177,16 @@ Basic example:
                && (!motherId || (motherId && persons[motherId]))){
             if(!families[familyId]){
               families[familyId] = {
-                father: persons[fatherId],
-                mother: persons[motherId],
-                children: []
+                persons: {
+                  father: persons[fatherId],
+                  mother: persons[motherId],
+                  children: []
+                },
+                caprIds: []
               };
             }
-            families[familyId].children.push(persons[childId]);
+            families[familyId].persons.children.push(persons[childId]);
+            families[familyId].caprIds.push(rel.id);
           }
         }
         
@@ -183,6 +201,14 @@ Basic example:
             this.push('_childFamilies', families[familyId]);
           }
         }
+      }
+      
+      /**
+       * Add a list of IDs of child-and-parents relationships to the add-mother
+       * and add-father events.
+       */
+      _addCaprIds(e) {
+        e.detail.caprIds = e.model.item.caprIds;
       }
     }
   

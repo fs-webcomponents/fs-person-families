@@ -27,7 +27,7 @@
     <fs-signin></fs-signin>
     
     <paper-input id="person-id" label="person ID" value="KWCF-GK5"></paper-input>
-    <fs-person-families person-id="KWCF-GK5" id="families"></fs-person-families>
+    <fs-person-families person-id="KWCF-GK5" add-persons id="families"></fs-person-families>
 
     <script>
       var families = document.getElementById('families');
@@ -45,6 +45,15 @@
         } else {
           console.log('Done loading');
         }
+      });
+      families.addEventListener('add-child', function(e){
+        console.log('addChild', e.detail);
+      });
+      families.addEventListener('add-father', function(e){
+        console.log('addFather', e.detail);
+      });
+      families.addEventListener('add-mother', function(e){
+        console.log('addMother', e.detail);
       });
       
       personId.addEventListener('change', function(e){

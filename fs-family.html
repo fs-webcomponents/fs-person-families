@@ -17,6 +17,14 @@ Set the family:
 You may have the children list collapsed by default:
 
     <fs-family family="[[family]]" children-collapsed></fs-family>
+ 
+A family object consists of a father, mother, and a list of children
+
+    {
+      father: {Object},
+      mother: {Object},
+      children: [ {Object} ]
+    }
     
 @group FamilySearch Elements
 @customElement
@@ -36,7 +44,7 @@ You may have the children list collapsed by default:
         width: 100%;
       }
       
-      .card-content fs-person-chip:last-child {
+      .card-content fs-person-chip:last-of-type {
         margin-top: 16px;
       }
       
@@ -58,25 +66,38 @@ You may have the children list collapsed by default:
     </style>
     <paper-card>
       <div class="card-content">
-        <fs-person-chip client-name="[[clientName]]" person="[[family.father]]" on-tap="_fatherTap"></fs-person-chip>
-        <fs-person-chip client-name="[[clientName]]" person="[[family.mother]]" on-tap="_motherTap"></fs-person-chip>
+        <template is="dom-if" if="{{_hasFather(family)}}">
+          <fs-person-chip client-name="[[clientName]]" person="[[family.father]]" on-tap="_fatherTap"></fs-person-chip>
+        </template>
+        <template is="dom-if" if="{{!_hasFather(family)}}">
+          <fs-person-chip>
+            <paper-button on-tap="_addFather">+ Add Spouse</paper-button>
+          </fs-person-chip>
+        </template>
+        <template is="dom-if" if="{{_hasMother(family)}}">
+          <fs-person-chip client-name="[[clientName]]" person="[[family.mother]]" on-tap="_motherTap"></fs-person-chip>
+        </template>
+        <template is="dom-if" if="{{!_hasMother(family)}}">
+          <fs-person-chip>
+            <paper-button on-tap="_addMother">+ Add Spouse</paper-button>
+          </fs-person-chip>
+        </template>
       </div>
-      <div id="children">
-        <paper-button on-tap="_toggleChildren" noink>{{_buttonText(childrenCollapsed)}}</paper-button>
-        <iron-collapse opened="[[!childrenCollapsed]]">
-          <div id="childrenList">
-            <template is="dom-repeat" items="[[family.children]]">
-              <fs-person-chip client-name="[[clientName]]" person="[[item]]" on-tap="_childTap"></fs-person-chip>
-            </template>
-            <template is="dom-if" if="{{addPersons}}">
-              <paper-button on-tap="_addChild" noink>+ Add Child</paper-button>
-            </template>
-            <template is="dom-if" if="{{!addPersons}}">
-              <div id="noChildren" hidden$="[[family.children.length]]">No children</div>
-            </template>
-          </div>
-        </iron-collapse>
-      </div>
+      <template is="dom-if" if="{{_displayChildren(family, addPersons)}}">
+        <div id="children">
+          <paper-button on-tap="_toggleChildren" noink>{{_buttonText(childrenCollapsed)}}</paper-button>
+          <iron-collapse opened="[[!childrenCollapsed]]">
+            <div id="childrenList">
+              <template is="dom-repeat" items="[[family.children]]">
+                <fs-person-chip client-name="[[clientName]]" person="[[item]]" on-tap="_childTap"></fs-person-chip>
+              </template>
+              <template is="dom-if" if="{{addPersons}}">
+                <paper-button on-tap="_addChild">+ Add Child</paper-button>
+              </template>
+            </div>
+          </iron-collapse>
+        </div>
+      </template>
     </paper-card>
   </template>
   <script>
@@ -103,8 +124,7 @@ You may have the children list collapsed by default:
           },
           
           /**
-           * When true the children list will be collapsed by default. This is only
-           * used if `includeChildren` is true.
+           * When true the children list will be collapsed by default.
            */
           childrenCollapsed: {
             type: Boolean,
@@ -129,6 +149,14 @@ You may have the children list collapsed by default:
       
       _toggleChildren() {
         this.childrenCollapsed = !this.childrenCollapsed;
+      }
+      
+      _hasFather(family) {
+        return family.father;
+      }
+      
+      _hasMother(family) {
+        return family.mother;
       }
       
       _fatherTap(e) {
@@ -156,7 +184,23 @@ You may have the children list collapsed by default:
         }));
       }
       
+      _displayChildren(family, addPersons) {
+        return addPersons || (family && Array.isArray(family.children) && family.children.length > 0);
+      }
+      
       _addChild() {
+        this._fireAddEvent('child');
+      }
+      
+      _addFather() {
+        this._fireAddEvent('father');
+      }
+      
+      _addMother() {
+        this._fireAddEvent('mother');
+      }
+      
+      _fireAddEvent(person) {
         const detail = {};
         if(this.family.father) {
           detail.fatherId = this.family.father.id;
@@ -164,7 +208,7 @@ You may have the children list collapsed by default:
         if(this.family.mother) {
           detail.motherId = this.family.mother.id;
         }
-        this.dispatchEvent(new CustomEvent('add-child', {
+        this.dispatchEvent(new CustomEvent(`add-${person}`, {
           detail,
           bubbles: true,
           composed: true

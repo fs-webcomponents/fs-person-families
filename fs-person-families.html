@@ -208,7 +208,7 @@ Basic example:
       }
       
       _handleResponse(e) {
-        if(e && e.detail && e.detail.response && e.detail.response.data) {
+        if(e && e.detail && e.detail.response && e.detail.response.data && e.detail.response.data.persons) {
           this._calculateFamilies(e.detail.response.data);
         }
       }

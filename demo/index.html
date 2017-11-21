@@ -33,7 +33,7 @@
       var families = document.getElementById('families');
       var personId = document.getElementById('person-id');
       
-      families.addEventListener('person-tap', function(e){
+      families.addEventListener('person-click', function(e){
         if(e.detail.personId){
           families.personId = e.detail.personId;
           personId.value = e.detail.personId;

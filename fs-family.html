@@ -105,11 +105,11 @@ A family object consists of a father, mother, and a list of children
       static get is() { return 'fs-family'; }
       
       /**
-       * Fired when a person is tapped. The event details will contain the same
-       * details as a click event with an added `personId` property.
+       * Fired when a person is clicked.
        *
-       * @event person-tap
+       * @event person-click
        * @param {{personId:string}} ID of the person that was clicked.
+       * @param {{sourceEvent:event}} Original click event.
        */
       
       static get properties() {
@@ -176,7 +176,7 @@ A family object consists of a father, mother, and a list of children
       
       _firePersonTap(e, personId) {
         e.detail.personId = personId;
-        this.dispatchEvent(new CustomEvent('person-tap', {
+        this.dispatchEvent(new CustomEvent('person-click', {
           detail: e.detail,
           bubbles: true,
           composed: true

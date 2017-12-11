@@ -63,6 +63,7 @@ Basic example:
             <fs-family family="[[item.persons]]" 
               add-persons="[[addPersons]]" 
               client-name="[[clientName]]" 
+              on-add-child="_addChildEvent"
               on-add-mother="_addCaprIds"
               on-add-father="_addCaprIds"></fs-family>
           </template>

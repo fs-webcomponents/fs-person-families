@@ -111,6 +111,36 @@ A family object consists of a father, mother, and a list of children
        * @param {{personId:string}} ID of the person that was clicked.
        * @param {{sourceEvent:event}} Original click event.
        */
+       
+      /**
+       * Fired when the "Add Child" button is clicked.
+       * This event does not bubble; it is designed to only be handled
+       * by the `fs-person-families` element.
+       * 
+       * @event add-child
+       * @param {{fatherId:string}} ID of the father of the family
+       * @param {{motherId:string}} ID of the mother of the family
+       */
+       
+      /**
+       * Fired when the "Add Spouse" button is clicked for a husband.
+       * This event does not bubble; it is designed to only be handled
+       * by the `fs-person-families` element.
+       * 
+       * @event add-father
+       * @param {{motherId:string}} ID of the mother of the family
+       * @param {{gender:string}} http://gedcomx.org/Male
+       */
+       
+      /**
+       * Fired when the "Add Spouse" button is clicked for a wife.
+       * This event does not bubble; it is designed to only be handled
+       * by the `fs-person-families` element.
+       * 
+       * @event add-mother
+       * @param {{fatherId:string}} ID of the father of the family
+       * @param {{gender:string}} http://gedcomx.org/Female
+       */ 
       
       static get properties() {
         return {
@@ -192,26 +222,22 @@ A family object consists of a father, mother, and a list of children
       }
       
       _addFather() {
-        this._fireAddEvent('father');
+        this._fireAddEvent('father', 'http://gedcomx.org/Male');
       }
       
       _addMother() {
-        this._fireAddEvent('mother');
+        this._fireAddEvent('mother', 'http://gedcomx.org/Female');
       }
       
-      _fireAddEvent(person) {
-        const detail = {};
+      _fireAddEvent(person, gender) {
+        const detail = {gender};
         if(this.family.father) {
           detail.fatherId = this.family.father.id;
         }
         if(this.family.mother) {
           detail.motherId = this.family.mother.id;
         }
-        this.dispatchEvent(new CustomEvent(`add-${person}`, {
-          detail,
-          bubbles: true,
-          composed: true
-        }));
+        this.dispatchEvent(new CustomEvent(`add-${person}`, {detail}));
       }
       
     }

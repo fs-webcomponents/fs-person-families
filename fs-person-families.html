@@ -79,7 +79,8 @@ Basic example:
             <template is="dom-repeat" items="{{_childFamilies}}">
               <fs-family family="[[item.persons]]" 
                 add-persons="[[addPersons]]" 
-                client-name="[[clientName]]" 
+                client-name="[[clientName]]"
+                on-add-child="_addChildEvent"
                 on-add-mother="_addCaprIds"
                 on-add-father="_addCaprIds"></fs-family>
             </template>
@@ -90,6 +91,20 @@ Basic example:
   </template>
   <script>
     class FSPersonFamilies extends FSApiAwareMixin(Polymer.Element) {
+       
+      /**
+       * Fired when an add person button is clicked. The details may contain
+       * any of the documented parameters which are designed to be passed
+       * directly to an `fs-add-person` element.
+       * 
+       * @event add-person
+       * @param {{fatherId:string}} ID of the father of the family that the person will be added to
+       * @param {{motherId:string}} ID of the mother of the family that the person will be added to
+       * @param {{childId:string}} ID of the child that a parent will be added to
+       * @param {{spouseId:string}} ID of a spouse that a person will be added to
+       * @param {{caprIds:array}} List of child and parents relationship IDs that the person should be added to as a parent
+       * @param {{gender:string}} Expected gender of the person that will be added
+       */ 
   
       static get is() { return 'fs-person-families'; }
       
@@ -156,23 +171,23 @@ Basic example:
       }
       
       _addParentEvent() {
-        this.dispatchEvent(new CustomEvent('add-parent', {
-          detail: {
-            childId: this.personId
-          },
-          bubbles: true,
-          composed: true
-        }));
+        this._fireAddPerson({
+          childId: this.personId
+        });
       }
       
       _addSpouseEvent() {
-        this.dispatchEvent(new CustomEvent('add-spouse', {
-          detail: {
-            spouseId: this.personId
-          },
-          bubbles: true,
-          composed: true
-        }));
+        this._fireAddPerson({
+          spouseId: this.personId
+        });
+      }
+      
+      /**
+       * Capture the add-child event from `fs-family` and reemit as an
+       * add-person event from this element.
+       */
+      _addChildEvent(e) {
+        this._fireAddPerson(e.detail);
       }
       
       _addChildUnknownParentEvent() {
@@ -183,7 +198,23 @@ Basic example:
         if(this._gender === 'http://gedcomx.org/Female') {
           detail.motherId = this.personId;
         }
-        this.dispatchEvent(new CustomEvent('add-child-unknown-parent', {
+        this._fireAddPerson(detail);
+      }
+      
+      /**
+       * Add a list of IDs of child-and-parents relationships to the add-mother
+       * and add-father events.
+       */
+      _addCaprIds(e) {
+        e.detail.caprIds = e.model.item.caprIds;
+        this._fireAddPerson(e.detail);
+      }
+      
+      /**
+       * Fire the `add-person` with the given details
+       */
+      _fireAddPerson(detail) {
+        this.dispatchEvent(new CustomEvent('add-person', {
           detail,
           bubbles: true,
           composed: true
@@ -291,14 +322,6 @@ Basic example:
             this.push('_childFamilies', families[familyId]);
           }
         }
-      }
-      
-      /**
-       * Add a list of IDs of child-and-parents relationships to the add-mother
-       * and add-father events.
-       */
-      _addCaprIds(e) {
-        e.detail.caprIds = e.model.item.caprIds;
       }
     }
   

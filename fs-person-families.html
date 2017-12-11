@@ -178,7 +178,8 @@ Basic example:
       
       _addSpouseEvent() {
         this._fireAddPerson({
-          spouseId: this.personId
+          spouseId: this.personId,
+          gender: this._gender === 'http://gedcomx.org/Male' ? 'http://gedcomx.org/Female' : 'http://gedcomx.org/Male'
         });
       }
       

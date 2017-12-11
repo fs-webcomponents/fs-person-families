@@ -1,6 +1,6 @@
 {
   "name": "fs-person-families",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "Polymer element that displays a FamilySearch person's families.",
   "keywords": [
     "web-component",
